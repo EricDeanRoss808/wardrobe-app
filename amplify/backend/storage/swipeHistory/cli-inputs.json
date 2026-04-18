@@ -1,0 +1,14 @@
+{
+  "resourceName": "swipeHistory",
+  "tableName": "swipe_history",
+  "partitionKey": {
+    "fieldName": "userId",
+    "fieldType": "string"
+  },
+  "sortKey": {
+    "fieldName": "timestamp",
+    "fieldType": "string"
+  },
+  "gsi": [],
+  "triggerFunctions": []
+}

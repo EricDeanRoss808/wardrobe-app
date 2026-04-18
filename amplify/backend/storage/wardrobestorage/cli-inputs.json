@@ -1,0 +1,13 @@
+{
+  "resourceName": "wardrobestorage",
+  "policyUUID": "42f8a836",
+  "bucketName": "wardrobeapp61dbb40a60c14c41bd0ae773d3cf9e94",
+  "storageAccess": "auth",
+  "guestAccess": [],
+  "authAccess": [
+    "CREATE_AND_UPDATE",
+    "READ"
+  ],
+  "triggerFunction": "NONE",
+  "groupAccess": {}
+}

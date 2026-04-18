@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "paths": {
+    "/wardrobe": {
+      "name": "/wardrobe",
+      "lambdaFunction": "wardrobeFunction",
+      "permissions": {
+        "setting": "private",
+        "auth": [
+          "create",
+          "read",
+          "update",
+          "delete"
+        ]
+      }
+    },
+    "/outfits": {
+      "name": "/outfits",
+      "lambdaFunction": "wardrobeFunction",
+      "permissions": {
+        "setting": "private",
+        "auth": [
+          "create",
+          "read",
+          "update",
+          "delete"
+        ]
+      }
+    },
+    "/swipe": {
+      "name": "/swipe",
+      "lambdaFunction": "wardrobeFunction",
+      "permissions": {
+        "setting": "private",
+        "auth": [
+          "create",
+          "read",
+          "update",
+          "delete"
+        ]
+      }
+    }
+  }
+}

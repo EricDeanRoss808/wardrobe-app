@@ -1,0 +1,14 @@
+{
+  "resourceName": "wardrobeItems",
+  "tableName": "wardrobe_items",
+  "partitionKey": {
+    "fieldName": "userId",
+    "fieldType": "string"
+  },
+  "sortKey": {
+    "fieldName": "itemId",
+    "fieldType": "string"
+  },
+  "gsi": [],
+  "triggerFunctions": []
+}

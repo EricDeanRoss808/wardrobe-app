@@ -1,0 +1,14 @@
+{
+  "resourceName": "outfits",
+  "tableName": "outfits",
+  "partitionKey": {
+    "fieldName": "userId",
+    "fieldType": "string"
+  },
+  "sortKey": {
+    "fieldName": "outfitId",
+    "fieldType": "string"
+  },
+  "gsi": [],
+  "triggerFunctions": []
+}

@@ -1,0 +1,94 @@
+{
+  "api": {
+    "wardrobeapi": {
+      "dependsOn": [
+        {
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "wardrobeFunction"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "API Gateway"
+    }
+  },
+  "auth": {
+    "wardrobeapp36f2011b": {
+      "customAuth": false,
+      "dependsOn": [],
+      "frontendAuthConfig": {
+        "mfaConfiguration": "OFF",
+        "mfaTypes": [
+          "SMS"
+        ],
+        "passwordProtectionSettings": {
+          "passwordPolicyCharacters": [],
+          "passwordPolicyMinLength": 8
+        },
+        "signupAttributes": [
+          "EMAIL"
+        ],
+        "socialProviders": [],
+        "usernameAttributes": [
+          "EMAIL"
+        ],
+        "verificationMechanisms": [
+          "EMAIL"
+        ]
+      },
+      "providerPlugin": "awscloudformation",
+      "service": "Cognito"
+    }
+  },
+  "function": {
+    "wardrobeFunction": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    }
+  },
+  "parameters": {
+    "AMPLIFY_function_wardrobeFunction_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "wardrobeFunction"
+        }
+      ]
+    },
+    "AMPLIFY_function_wardrobeFunction_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "wardrobeFunction"
+        }
+      ]
+    }
+  },
+  "storage": {
+    "outfits": {
+      "providerPlugin": "awscloudformation",
+      "service": "DynamoDB"
+    },
+    "swipeHistory": {
+      "providerPlugin": "awscloudformation",
+      "service": "DynamoDB"
+    },
+    "users": {
+      "providerPlugin": "awscloudformation",
+      "service": "DynamoDB"
+    },
+    "wardrobeItems": {
+      "providerPlugin": "awscloudformation",
+      "service": "DynamoDB"
+    },
+    "wardrobestorage": {
+      "dependsOn": [],
+      "providerPlugin": "awscloudformation",
+      "service": "S3"
+    }
+  }
+}

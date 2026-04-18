@@ -1,0 +1,37 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-wardrobeapp-dev-0f29b-authRole",
+      "UnauthRoleArn": "arn:aws:iam::398132682815:role/amplify-wardrobeapp-dev-0f29b-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::398132682815:role/amplify-wardrobeapp-dev-0f29b-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-wardrobeapp-dev-0f29b-deployment",
+      "UnauthRoleName": "amplify-wardrobeapp-dev-0f29b-unauthRole",
+      "StackName": "amplify-wardrobeapp-dev-0f29b",
+      "StackId": "arn:aws:cloudformation:us-east-1:398132682815:stack/amplify-wardrobeapp-dev-0f29b/6ebb6db0-3afd-11f1-9828-0affd4d11c2d",
+      "AmplifyAppId": "d1xwnlytlc3hu",
+      "APIGatewayAuthURL": "https://s3.amazonaws.com/amplify-wardrobeapp-dev-0f29b-deployment/amplify-cfn-templates/api/APIGatewayAuthStack.json"
+    },
+    "categories": {
+      "auth": {
+        "wardrobeapp36f2011b": {}
+      },
+      "storage": {
+        "wardrobestorage": {},
+        "users": {},
+        "wardrobeItems": {},
+        "outfits": {},
+        "swipeHistory": {}
+      },
+      "function": {
+        "wardrobeFunction": {
+          "deploymentBucketName": "amplify-wardrobeapp-dev-0f29b-deployment",
+          "s3Key": "amplify-builds/wardrobeFunction-48562b57577956707830-build.zip"
+        }
+      },
+      "api": {
+        "wardrobeapi": {}
+      }
+    }
+  }
+}
