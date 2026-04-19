@@ -504,7 +504,7 @@
       // Upload to S3
       try {
         const result = await uploadData({
-          key: `photos/${Date.now()}-${file.name}`,
+          key: `uploads/${(await getCurrentUser()).userId}/${Date.now()}-${file.name}`,
           data: file,
           options: { contentType: file.type }
         });
