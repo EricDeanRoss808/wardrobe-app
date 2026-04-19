@@ -36,7 +36,7 @@
     .clothes-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 0 20px 20px; }
     .cloth-card { background: var(--surface2); overflow: hidden; cursor: pointer; transition: transform 0.15s; position: relative; }
     .cloth-card:active { transform: scale(0.97); }
-    .cloth-thumb { width: 100%; aspect-ratio: 3/4; display: flex; align-items: center; justify-content: center; font-size: 32px; position: relative; background: var(--surface3); }
+    .cloth-thumb { width: 100%; aspect-ratio: 3/4; display: flex; align-items: center; justify-content: center; font-size: 32px; position: relative; background: var(--surface3); overflow: hidden; }
     .cloth-tag { position: absolute; bottom: 6px; left: 6px; background: rgba(0,0,0,0.8); padding: 2px 6px; font-size: 9px; color: #666; letter-spacing: 0.07em; text-transform: uppercase; }
     .cloth-info { padding: 8px 8px 10px; border-top: 0.5px solid var(--border); }
     .cloth-name { font-size: 11px; color: #fff; line-height: 1.3; letter-spacing: 0.02em; }
@@ -377,43 +377,104 @@
 
   function showLoginModal() {
     const modal = document.createElement('div');
-    modal.style.cssText = 'position:fixed;inset:0;background:#000;z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:32px;';
-    modal.innerHTML = `
-      <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:#fff;letter-spacing:0.06em;">Drip</div>
-      <input id="authEmail" type="email" placeholder="Email" style="width:100%;max-width:320px;padding:12px;background:#111;border:0.5px solid #333;color:#fff;font-size:14px;outline:none;">
-      <input id="authPassword" type="password" placeholder="Password" style="width:100%;max-width:320px;padding:12px;background:#111;border:0.5px solid #333;color:#fff;font-size:14px;outline:none;">
-      <button id="btnSignIn" style="width:100%;max-width:320px;padding:12px;background:#fff;border:none;color:#000;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;">Sign In</button>
-      <button id="btnSignUp" style="width:100%;max-width:320px;padding:12px;background:transparent;border:0.5px solid #333;color:#fff;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;">Create Account</button>
-      <div id="authError" style="color:#e55;font-size:12px;"></div>
-    `;
+    modal.id = 'authModal';
+    modal.style.cssText = 'position:fixed;inset:0;background:#000;z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;';
+    renderSignIn(modal);
     document.body.appendChild(modal);
+  }
 
-    document.getElementById('btnSignIn').onclick = async () => {
+  function renderSignIn(modal) {
+    modal.innerHTML = `
+      <div style="width:100%;max-width:320px;display:flex;flex-direction:column;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;color:#fff;letter-spacing:0.08em;margin-bottom:4px;">Drip</div>
+        <div style="font-size:9px;color:#444;letter-spacing:0.35em;text-transform:uppercase;margin-bottom:40px;">Management</div>
+        <div style="font-size:10px;color:#666;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:24px;">Sign in to your account</div>
+        <input id="authEmail" type="email" placeholder="Email address" style="width:100%;padding:12px;background:#111;border:0.5px solid #333;border-bottom:none;color:#fff;font-size:13px;outline:none;">
+        <input id="authPassword" type="password" placeholder="Password" style="width:100%;padding:12px;background:#111;border:0.5px solid #333;color:#fff;font-size:13px;outline:none;margin-bottom:12px;">
+        <button id="btnSignIn" style="width:100%;padding:13px;background:#fff;border:none;color:#000;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;font-weight:500;margin-bottom:8px;">Sign In</button>
+        <button id="btnGoSignUp" style="width:100%;padding:13px;background:transparent;border:0.5px solid #333;color:#888;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;">Create Account</button>
+        <div id="authError" style="color:#e55;font-size:11px;margin-top:12px;text-align:center;min-height:16px;"></div>
+      </div>
+    `;
+    modal.querySelector('#btnSignIn').onclick = async () => {
+      const err = modal.querySelector('#authError');
+      err.style.color = '#e55'; err.textContent = '';
       try {
-        await signIn({
-          username: document.getElementById('authEmail').value,
-          password: document.getElementById('authPassword').value
-        });
-        modal.remove();
-        location.reload();
-      } catch (err) {
-        document.getElementById('authError').textContent = err.message;
-      }
+        await signIn({ username: modal.querySelector('#authEmail').value, password: modal.querySelector('#authPassword').value });
+        modal.remove(); location.reload();
+      } catch (e) { err.textContent = e.message; }
     };
+    modal.querySelector('#btnGoSignUp').onclick = () => renderSignUp(modal);
+    modal.querySelector('#authPassword').addEventListener('keydown', e => { if (e.key === 'Enter') modal.querySelector('#btnSignIn').click(); });
+  }
 
-    document.getElementById('btnSignUp').onclick = async () => {
+  function renderSignUp(modal) {
+    modal.innerHTML = `
+      <div style="width:100%;max-width:320px;display:flex;flex-direction:column;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;color:#fff;letter-spacing:0.08em;margin-bottom:4px;">Drip</div>
+        <div style="font-size:9px;color:#444;letter-spacing:0.35em;text-transform:uppercase;margin-bottom:40px;">Management</div>
+        <div style="font-size:10px;color:#666;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:24px;">Create your account</div>
+        <input id="authEmail" type="email" placeholder="Email address" style="width:100%;padding:12px;background:#111;border:0.5px solid #333;border-bottom:none;color:#fff;font-size:13px;outline:none;">
+        <input id="authPassword" type="password" placeholder="Password (8+ characters)" style="width:100%;padding:12px;background:#111;border:0.5px solid #333;border-bottom:none;color:#fff;font-size:13px;outline:none;">
+        <input id="authPassword2" type="password" placeholder="Confirm password" style="width:100%;padding:12px;background:#111;border:0.5px solid #333;color:#fff;font-size:13px;outline:none;margin-bottom:12px;">
+        <button id="btnSignUp" style="width:100%;padding:13px;background:#fff;border:none;color:#000;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;font-weight:500;margin-bottom:8px;">Create Account</button>
+        <button id="btnGoSignIn" style="width:100%;padding:13px;background:transparent;border:0.5px solid #333;color:#888;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;">Back to Sign In</button>
+        <div id="authError" style="color:#e55;font-size:11px;margin-top:12px;text-align:center;min-height:16px;"></div>
+      </div>
+    `;
+    modal.querySelector('#btnSignUp').onclick = async () => {
+      const err = modal.querySelector('#authError');
+      const email = modal.querySelector('#authEmail').value;
+      const pw = modal.querySelector('#authPassword').value;
+      const pw2 = modal.querySelector('#authPassword2').value;
+      err.style.color = '#e55';
+      if (pw !== pw2) { err.textContent = 'Passwords do not match.'; return; }
+      if (pw.length < 8) { err.textContent = 'Password must be at least 8 characters.'; return; }
       try {
-        await signUp({
-          username: document.getElementById('authEmail').value,
-          password: document.getElementById('authPassword').value,
-          options: { userAttributes: { email: document.getElementById('authEmail').value } }
-        });
-        document.getElementById('authError').style.color = '#5e5';
-        document.getElementById('authError').textContent = 'Check your email for a confirmation code!';
-      } catch (err) {
-        document.getElementById('authError').textContent = err.message;
-      }
+        await signUp({ username: email, password: pw, options: { userAttributes: { email } } });
+        renderConfirm(modal, email);
+      } catch (e) { err.textContent = e.message; }
     };
+    modal.querySelector('#btnGoSignIn').onclick = () => renderSignIn(modal);
+  }
+
+  function renderConfirm(modal, email) {
+    modal.innerHTML = `
+      <div style="width:100%;max-width:320px;display:flex;flex-direction:column;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;color:#fff;letter-spacing:0.08em;margin-bottom:4px;">Drip</div>
+        <div style="font-size:9px;color:#444;letter-spacing:0.35em;text-transform:uppercase;margin-bottom:40px;">Management</div>
+        <div style="font-size:10px;color:#666;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;">Check your email</div>
+        <div style="font-size:12px;color:#666;line-height:1.7;margin-bottom:24px;">We sent a code to <span style="color:#fff;">${email}</span>. Enter it below to activate your account.</div>
+        <input id="confirmCode" type="text" placeholder="000000" maxlength="6" style="width:100%;padding:14px;background:#111;border:0.5px solid #333;color:#fff;font-size:22px;outline:none;letter-spacing:0.3em;text-align:center;margin-bottom:12px;">
+        <button id="btnConfirm" style="width:100%;padding:13px;background:#fff;border:none;color:#000;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;font-weight:500;margin-bottom:8px;">Confirm Account</button>
+        <button id="btnResend" style="width:100%;padding:13px;background:transparent;border:0.5px solid #333;color:#888;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;margin-bottom:8px;">Resend Code</button>
+        <button id="btnBackSignIn" style="width:100%;padding:13px;background:transparent;border:none;color:#555;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;">Back to Sign In</button>
+        <div id="authError" style="color:#e55;font-size:11px;margin-top:12px;text-align:center;min-height:16px;"></div>
+      </div>
+    `;
+    modal.querySelector('#btnConfirm').onclick = async () => {
+      const err = modal.querySelector('#authError');
+      const code = modal.querySelector('#confirmCode').value.trim();
+      err.style.color = '#e55';
+      if (!code) { err.textContent = 'Please enter the confirmation code.'; return; }
+      try {
+        const { confirmSignUp } = await import('https://esm.sh/aws-amplify/auth');
+        await confirmSignUp({ username: email, confirmationCode: code });
+        err.style.color = '#5e5';
+        err.textContent = 'Account confirmed! Taking you to sign in...';
+        setTimeout(() => renderSignIn(modal), 1400);
+      } catch (e) { err.textContent = e.message; }
+    };
+    modal.querySelector('#btnResend').onclick = async () => {
+      const err = modal.querySelector('#authError');
+      try {
+        const { resendSignUpCode } = await import('https://esm.sh/aws-amplify/auth');
+        await resendSignUpCode({ username: email });
+        err.style.color = '#5e5'; err.textContent = 'Code resent — check your email!';
+      } catch (e) { err.style.color = '#e55'; err.textContent = e.message; }
+    };
+    modal.querySelector('#btnBackSignIn').onclick = () => renderSignIn(modal);
+    modal.querySelector('#confirmCode').addEventListener('keydown', e => { if (e.key === 'Enter') modal.querySelector('#btnConfirm').click(); });
   }
 
   document.getElementById('uploadZone').onclick = () => {
@@ -423,7 +484,19 @@
     input.onchange = async (e) => {
       const file = e.target.files[0];
       if (!file) return;
-      document.querySelector('.upload-label').textContent = 'Uploading...';
+
+      // Show local preview immediately
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const zone = document.getElementById('uploadZone');
+        zone.style.padding = '0';
+        zone.style.border = 'none';
+        zone.innerHTML = `<img src="${ev.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:0;" />`;
+        window._uploadedPhotoDataUrl = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+
+      // Upload to S3
       try {
         const result = await uploadData({
           key: `photos/${Date.now()}-${file.name}`,
@@ -431,36 +504,77 @@
           options: { contentType: file.type }
         });
         window._uploadedPhotoKey = result.key;
-        document.querySelector('.upload-label').textContent = '✓ Photo uploaded';
       } catch (err) {
-        document.querySelector('.upload-label').textContent = 'Upload failed';
-        console.error(err);
+        console.error('Upload failed:', err);
       }
     };
     input.click();
   };
 
   window.handleAddItem = async () => {
-    const payload = {
-      name: document.getElementById('itemName').value,
-      brand: document.getElementById('itemBrand').value,
-      category: document.getElementById('itemCategory').value,
-      fit: document.getElementById('itemFit').value,
-      color: document.querySelector('#colorPicker .color-swatch.selected')?.dataset.color,
-      tags: [...document.querySelectorAll('#tagRow .tag-toggle.selected')].map(t => t.dataset.tag),
-      seasons: [...document.querySelectorAll('#seasonRow .tag-toggle.selected')].map(t => t.dataset.season),
-      photoKey: window._uploadedPhotoKey || null
-    };
+    const name = document.getElementById('itemName').value;
+    const brand = document.getElementById('itemBrand').value;
+    const category = document.getElementById('itemCategory').value;
+    const fit = document.getElementById('itemFit').value;
+    const color = document.querySelector('#colorPicker .color-swatch.selected')?.dataset.color;
+    const tags = [...document.querySelectorAll('#tagRow .tag-toggle.selected')].map(t => t.dataset.tag);
+    const seasons = [...document.querySelectorAll('#seasonRow .tag-toggle.selected')].map(t => t.dataset.season);
+    const photoKey = window._uploadedPhotoKey || null;
+    const photoDataUrl = window._uploadedPhotoDataUrl || null;
+
+    if (!name) { alert('Please enter an item name.'); return; }
+
+    // Add card to wardrobe grid immediately with photo
+    const grid = document.querySelector('.clothes-grid');
+    const thumb = photoDataUrl
+      ? `<img src="${photoDataUrl}" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;" />`
+      : `<div style="font-size:32px;">👕</div>`;
+    const card = document.createElement('div');
+    card.className = 'cloth-card';
+    card.innerHTML = `
+      <div class="cloth-thumb" style="position:relative;">
+        ${thumb}
+        <div class="cloth-tag">${category || 'Item'}</div>
+      </div>
+      <div class="cloth-info">
+        <div class="cloth-name">${name}</div>
+        <div class="cloth-brand">${brand || ''}</div>
+      </div>`;
+    grid.appendChild(card);
+
+    // Update piece count
+    const subtitle = document.querySelector('#screen-wardrobe .screen-subtitle');
+    if (subtitle) {
+      const current = parseInt(subtitle.textContent) || 0;
+      subtitle.textContent = (current + 1) + ' pieces';
+    }
+
+    // Reset form
+    document.getElementById('itemName').value = '';
+    document.getElementById('itemBrand').value = '';
+    document.getElementById('itemCategory').value = '';
+    document.getElementById('itemFit').value = '';
+    const zone = document.getElementById('uploadZone');
+    zone.style.padding = '';
+    zone.style.border = '';
+    zone.innerHTML = `
+      <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      <div class="upload-label">Upload photo</div>
+      <div class="upload-sub">tap or drag & drop</div>`;
+    window._uploadedPhotoKey = null;
+    window._uploadedPhotoDataUrl = null;
+
+    switchScreen('wardrobe');
+
+    // Post to backend in background
     try {
       await post({
         apiName: 'wardrobeapi',
         path: '/wardrobe',
-        options: { body: payload }
+        options: { body: { name, brand, category, fit, color, tags, seasons, photoKey } }
       }).response;
-      alert('Item added!');
-      switchScreen('wardrobe');
     } catch (err) {
-      alert('Error saving item: ' + err.message);
+      console.error('Backend save failed:', err);
     }
   };
 
