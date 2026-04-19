@@ -1,6 +1,12 @@
-const AWS = require('aws-sdk');
-const dynamo = new AWS.DynamoDB.DocumentClient();
-const s3 = new AWS.S3();
+const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
+const { DynamoDBDocumentClient, PutCommand, QueryCommand } = require('@aws-sdk/lib-dynamodb');
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
+const { LambdaClient, InvokeCommand } = require('@aws-sdk/client-lambda');
+
+const dynamo = DynamoDBDocumentClient.from(new DynamoDBClient({}));
+const s3 = new S3Client({});
+const lambdaClient = new LambdaClient({});
 
 const TABLES = {
   users: process.env.STORAGE_USERS_NAME,
@@ -20,17 +26,17 @@ exports.handler = async (event) => {
 
   try {
 
-    // ─── GET /wardrobe ── fetch user's wardrobe items ───
+    // ─── GET /wardrobe ───
     if (path === '/wardrobe' && method === 'GET') {
-      const result = await dynamo.query({
+      const result = await dynamo.send(new QueryCommand({
         TableName: TABLES.wardrobe,
         KeyConditionExpression: 'userId = :uid',
         ExpressionAttributeValues: { ':uid': userId }
-      }).promise();
+      }));
       return respond(200, result.Items);
     }
 
-    // ─── POST /wardrobe ── add a wardrobe item ───
+    // ─── POST /wardrobe ───
     if (path === '/wardrobe' && method === 'POST') {
       const body = JSON.parse(event.body || '{}');
       const item = {
@@ -46,73 +52,54 @@ exports.handler = async (event) => {
         photoKey: body.photoKey || null,
         createdAt: new Date().toISOString()
       };
-      await dynamo.put({
+      await dynamo.send(new PutCommand({
         TableName: TABLES.wardrobe,
         Item: item
-      }).promise();
+      }));
       return respond(200, { message: 'Item saved', item });
     }
 
-    // ─── POST /wardrobe/presign ── get pre-signed S3 upload URL ───
+    // ─── POST /wardrobe/presign ───
     if (path === '/wardrobe/presign' && method === 'POST') {
       const { fileName, fileType } = JSON.parse(event.body || '{}');
       const key = `uploads/${userId}/${Date.now()}-${fileName}`;
-      const url = await s3.getSignedUrlPromise('putObject', {
+      const url = await getSignedUrl(s3, new PutObjectCommand({
         Bucket: BUCKET,
         Key: key,
-        ContentType: fileType,
-        Expires: 300
-      });
+        ContentType: fileType
+      }), { expiresIn: 300 });
       return respond(200, { uploadUrl: url, key });
     }
 
-
-// ─── POST /outfits ── trigger outfit-generator then imageGen ───
+    // ─── POST /outfits ── fire and forget ───
     if (path === '/outfits' && method === 'POST') {
-      const lambda = new AWS.Lambda();
       const body = JSON.parse(event.body || '{}');
       const targetUserId = body.userId || userId;
 
-      // Step 1: Generate outfits
-      const outfitResult = await lambda.invoke({
+      // Fire async - don't wait
+      await lambdaClient.send(new InvokeCommand({
         FunctionName: 'outfit-generator',
-        InvocationType: 'RequestResponse',
-        Payload: JSON.stringify({ userId: targetUserId })
-      }).promise();
-      const outfitResponse = JSON.parse(outfitResult.Payload);
-
-      if (outfitResponse.status !== 'success') {
-        return respond(500, outfitResponse);
-      }
-
-      // Step 2: Generate mockup images
-      const imageResult = await lambda.invoke({
-        FunctionName: 'imageGen',
-        InvocationType: 'RequestResponse',
-        Payload: JSON.stringify({
-          userId: targetUserId,
-          outfitSetId: outfitResponse.outfitSetId
-        })
-      }).promise();
-      const imageResponse = JSON.parse(imageResult.Payload);
+        InvocationType: 'Event',
+        Payload: Buffer.from(JSON.stringify({ userId: targetUserId }))
+      }));
 
       return respond(200, {
-        outfits: outfitResponse,
-        mockups: imageResponse
+        status: 'generating',
+        message: 'Outfit generation started. Poll GET /outfits for results.'
       });
     }
-    // ─── GET /outfits ── fetch user's saved outfits ───
+
+    // ─── GET /outfits ───
     if (path === '/outfits' && method === 'GET') {
-      const result = await dynamo.query({
+      const result = await dynamo.send(new QueryCommand({
         TableName: TABLES.outfits,
         KeyConditionExpression: 'userId = :uid',
         ExpressionAttributeValues: { ':uid': userId }
-      }).promise();
+      }));
       return respond(200, result.Items);
     }
 
-    // ─── POST /swipe ── save a swipe result ───
-    // Hours 11-16 team: add personalization logic here
+    // ─── POST /swipe ───
     if (path === '/swipe' && method === 'POST') {
       const body = JSON.parse(event.body || '{}');
       const swipe = {
@@ -121,20 +108,20 @@ exports.handler = async (event) => {
         itemId: body.itemId,
         direction: body.direction
       };
-      await dynamo.put({
+      await dynamo.send(new PutCommand({
         TableName: TABLES.swipes,
         Item: swipe
-      }).promise();
+      }));
       return respond(200, { message: 'Swipe recorded', swipe });
     }
 
-    // ─── GET /swipe ── get swipe history ───
+    // ─── GET /swipe ───
     if (path === '/swipe' && method === 'GET') {
-      const result = await dynamo.query({
+      const result = await dynamo.send(new QueryCommand({
         TableName: TABLES.swipes,
         KeyConditionExpression: 'userId = :uid',
         ExpressionAttributeValues: { ':uid': userId }
-      }).promise();
+      }));
       return respond(200, result.Items);
     }
 
