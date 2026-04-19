@@ -557,32 +557,41 @@
     switchScreen('wardrobe');
 
     // Post to backend in background
+    const selectedColor = document.querySelector('#colorPicker .color-swatch.selected')?.dataset.color || 'unknown';
+    const selectedCategory = document.getElementById('itemCategory').value || 'tops';
+    const selectedFit = document.getElementById('itemFit').value || 'regular';
+    const selectedTags = [...document.querySelectorAll('#tagRow .tag-toggle.selected')].map(t => t.dataset.tag);
+    const selectedName = document.getElementById('itemName').value;
+
+    const payload = {
+      name: selectedName,
+      brand: document.getElementById('itemBrand').value,
+      category: selectedCategory,
+      fit: selectedFit,
+      color: selectedColor,
+      tags: selectedTags,
+      seasons: [...document.querySelectorAll('#seasonRow .tag-toggle.selected')].map(t => t.dataset.season),
+      photoKey: window._uploadedPhotoKey || null,
+      status: 'success',
+      confidence: '90.0',
+      processedAt: new Date().toISOString(),
+      imageUrl: '',
+      detectedItems: [],
+      cleanedLabels: {
+        itemTypes: [selectedCategory],
+        colors: [selectedColor],
+        materials: [],
+        style: selectedTags,
+        fit: [selectedFit],
+        patterns: []
+      }
+    };
+
     try {
       await post({
         apiName: 'wardrobeapi',
         path: '/wardrobe',
-        options: { body: {
-          name,
-          brand,
-          category,
-          fit,
-          color,
-          tags,
-          seasons,
-          photoKey,
-          status: 'success',
-          cleanedLabels: {
-            itemTypes: [category],
-            colors: [color],
-            materials: [],
-            style: tags,
-            fit: [fit],
-            patterns: []
-          },
-          detectedItems: [],
-          confidence: '90.0',
-          processedAt: new Date().toISOString()
-        } }
+        options: { body: payload }
       }).response;
     } catch (err) {
       console.error('Backend save failed:', err);
