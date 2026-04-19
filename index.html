@@ -302,12 +302,13 @@
 
 <script type="module">
   import { Amplify } from 'https://esm.sh/aws-amplify';
-  import { signIn, signUp, signOut, getCurrentUser, fetchAuthSession } from 'https://esm.sh/aws-amplify/auth';
+  import { fetchAuthSession, signIn, signUp, signOut, getCurrentUser } from 'https://esm.sh/aws-amplify/auth';
   import { uploadData } from 'https://esm.sh/aws-amplify/storage';
   import { post, get } from 'https://esm.sh/aws-amplify/api';
 
   async function getUserId() {
     const session = await fetchAuthSession();
+    console.log('My Identity ID:', session.identityId);
     return session.identityId;
   }
 
