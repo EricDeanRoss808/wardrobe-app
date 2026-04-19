@@ -26,7 +26,7 @@
       "function": {
         "wardrobeFunction": {
           "deploymentBucketName": "amplify-wardrobeapp-dev-0f29b-deployment",
-          "s3Key": "amplify-builds/wardrobeFunction-48562b57577956707830-build.zip"
+          "s3Key": "amplify-builds/wardrobeFunction-6545712f70455a4d4c46-build.zip"
         }
       },
       "api": {

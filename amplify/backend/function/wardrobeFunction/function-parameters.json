@@ -1,3 +1,35 @@
 {
-  "lambdaLayers": []
+  "lambdaLayers": [],
+  "permissions": {
+    "storage": {
+      "wardrobestorage": [
+        "create",
+        "read",
+        "update",
+        "delete"
+      ],
+      "users": [
+        "create",
+        "read"
+      ],
+      "wardrobeItems": [
+        "create",
+        "read",
+        "update",
+        "delete"
+      ],
+      "outfits": [
+        "create",
+        "read",
+        "update",
+        "delete"
+      ],
+      "swipeHistory": [
+        "create",
+        "read",
+        "update",
+        "delete"
+      ]
+    }
+  }
 }

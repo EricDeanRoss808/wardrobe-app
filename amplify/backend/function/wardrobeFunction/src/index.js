@@ -1,53 +1,130 @@
 const AWS = require('aws-sdk');
+const dynamo = new AWS.DynamoDB.DocumentClient();
+const s3 = new AWS.S3();
+
+const TABLES = {
+  users: process.env.STORAGE_USERS_NAME,
+  wardrobe: process.env.STORAGE_WARDROBEITEMS_NAME,
+  outfits: process.env.STORAGE_OUTFITS_NAME,
+  swipes: process.env.STORAGE_SWIPEHISTORY_NAME
+};
+
+const BUCKET = process.env.STORAGE_WARDROBESTORAGE_BUCKETNAME;
 
 exports.handler = async (event) => {
   const path = event.path;
   const method = event.httpMethod;
+  const userId = event.requestContext?.identity?.cognitoIdentityId || 'test-user';
+
+  console.log(`${method} ${path}`);
 
   try {
-    // Route: GET /wardrobe - fetch user's wardrobe items
+
+    // ─── GET /wardrobe ── fetch user's wardrobe items ───
     if (path === '/wardrobe' && method === 'GET') {
-      return respond(200, { message: 'Get wardrobe - TODO' });
+      const result = await dynamo.query({
+        TableName: TABLES.wardrobe,
+        KeyConditionExpression: 'userId = :uid',
+        ExpressionAttributeValues: { ':uid': userId }
+      }).promise();
+      return respond(200, result.Items);
     }
 
-    // Route: POST /wardrobe - add a wardrobe item
+    // ─── POST /wardrobe ── add a wardrobe item ───
     if (path === '/wardrobe' && method === 'POST') {
-      return respond(200, { message: 'Add wardrobe item - TODO' });
+      const body = JSON.parse(event.body || '{}');
+      const item = {
+        userId,
+        itemId: `item_${Date.now()}`,
+        name: body.name,
+        brand: body.brand,
+        category: body.category,
+        fit: body.fit,
+        color: body.color,
+        tags: body.tags,
+        seasons: body.seasons,
+        photoKey: body.photoKey || null,
+        createdAt: new Date().toISOString()
+      };
+      await dynamo.put({
+        TableName: TABLES.wardrobe,
+        Item: item
+      }).promise();
+      return respond(200, { message: 'Item saved', item });
     }
 
-    // Route: POST /wardrobe/presign - get pre-signed S3 upload URL
+    // ─── POST /wardrobe/presign ── get pre-signed S3 upload URL ───
     if (path === '/wardrobe/presign' && method === 'POST') {
-      const s3 = new AWS.S3();
-      const { fileName, fileType } = JSON.parse(event.body);
-      const params = {
-        Bucket: process.env.S3_BUCKET_NAME,
-        Key: `uploads/${Date.now()}-${fileName}`,
+      const { fileName, fileType } = JSON.parse(event.body || '{}');
+      const key = `uploads/${userId}/${Date.now()}-${fileName}`;
+      const url = await s3.getSignedUrlPromise('putObject', {
+        Bucket: BUCKET,
+        Key: key,
         ContentType: fileType,
         Expires: 300
-      };
-      const url = await s3.getSignedUrlPromise('putObject', params);
-      return respond(200, { uploadUrl: url, key: params.Key });
+      });
+      return respond(200, { uploadUrl: url, key });
     }
 
-    // Route: POST /outfits - outfit generation (Hours 17-22 team fills this in)
+    // ─── POST /outfits ── save generated outfit ───
+    // Hours 17-22 team: add Gemini outfit generation here
     if (path === '/outfits' && method === 'POST') {
-      return respond(200, { message: 'Outfit generation - TODO' });
+      const body = JSON.parse(event.body || '{}');
+      const outfit = {
+        userId,
+        outfitId: `outfit_${Date.now()}`,
+        items: body.items || [],
+        occasion: body.occasion || 'casual',
+        generatedAt: new Date().toISOString()
+      };
+      await dynamo.put({
+        TableName: TABLES.outfits,
+        Item: outfit
+      }).promise();
+      return respond(200, { message: 'Outfit saved', outfit });
     }
 
-    // Route: POST /swipe - save swipe result (Hours 11-16 team fills this in)
+    // ─── GET /outfits ── fetch user's saved outfits ───
+    if (path === '/outfits' && method === 'GET') {
+      const result = await dynamo.query({
+        TableName: TABLES.outfits,
+        KeyConditionExpression: 'userId = :uid',
+        ExpressionAttributeValues: { ':uid': userId }
+      }).promise();
+      return respond(200, result.Items);
+    }
+
+    // ─── POST /swipe ── save a swipe result ───
+    // Hours 11-16 team: add personalization logic here
     if (path === '/swipe' && method === 'POST') {
-      return respond(200, { message: 'Swipe recorded - TODO' });
+      const body = JSON.parse(event.body || '{}');
+      const swipe = {
+        userId,
+        timestamp: new Date().toISOString(),
+        itemId: body.itemId,
+        direction: body.direction
+      };
+      await dynamo.put({
+        TableName: TABLES.swipes,
+        Item: swipe
+      }).promise();
+      return respond(200, { message: 'Swipe recorded', swipe });
     }
 
-    // Route: GET /swipe - get swipe feed (Hours 11-16 team fills this in)
+    // ─── GET /swipe ── get swipe history ───
     if (path === '/swipe' && method === 'GET') {
-      return respond(200, { message: 'Get swipe feed - TODO' });
+      const result = await dynamo.query({
+        TableName: TABLES.swipes,
+        KeyConditionExpression: 'userId = :uid',
+        ExpressionAttributeValues: { ':uid': userId }
+      }).promise();
+      return respond(200, result.Items);
     }
 
     return respond(404, { error: 'Route not found' });
 
   } catch (err) {
-    console.error(err);
+    console.error('Error:', err);
     return respond(500, { error: err.message });
   }
 };

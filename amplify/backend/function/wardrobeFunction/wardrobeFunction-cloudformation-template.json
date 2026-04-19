@@ -15,6 +15,58 @@
     },
     "s3Key": {
       "Type": "String"
+    },
+    "storagewardrobestorageBucketName": {
+      "Type": "String",
+      "Default": "storagewardrobestorageBucketName"
+    },
+    "storageusersName": {
+      "Type": "String",
+      "Default": "storageusersName"
+    },
+    "storageusersArn": {
+      "Type": "String",
+      "Default": "storageusersArn"
+    },
+    "storageusersStreamArn": {
+      "Type": "String",
+      "Default": "storageusersStreamArn"
+    },
+    "storagewardrobeItemsName": {
+      "Type": "String",
+      "Default": "storagewardrobeItemsName"
+    },
+    "storagewardrobeItemsArn": {
+      "Type": "String",
+      "Default": "storagewardrobeItemsArn"
+    },
+    "storagewardrobeItemsStreamArn": {
+      "Type": "String",
+      "Default": "storagewardrobeItemsStreamArn"
+    },
+    "storageoutfitsName": {
+      "Type": "String",
+      "Default": "storageoutfitsName"
+    },
+    "storageoutfitsArn": {
+      "Type": "String",
+      "Default": "storageoutfitsArn"
+    },
+    "storageoutfitsStreamArn": {
+      "Type": "String",
+      "Default": "storageoutfitsStreamArn"
+    },
+    "storageswipeHistoryName": {
+      "Type": "String",
+      "Default": "storageswipeHistoryName"
+    },
+    "storageswipeHistoryArn": {
+      "Type": "String",
+      "Default": "storageswipeHistoryArn"
+    },
+    "storageswipeHistoryStreamArn": {
+      "Type": "String",
+      "Default": "storageswipeHistoryStreamArn"
     }
   },
   "Conditions": {
@@ -69,6 +121,45 @@
             },
             "REGION": {
               "Ref": "AWS::Region"
+            },
+            "STORAGE_WARDROBESTORAGE_BUCKETNAME": {
+              "Ref": "storagewardrobestorageBucketName"
+            },
+            "STORAGE_USERS_NAME": {
+              "Ref": "storageusersName"
+            },
+            "STORAGE_USERS_ARN": {
+              "Ref": "storageusersArn"
+            },
+            "STORAGE_USERS_STREAMARN": {
+              "Ref": "storageusersStreamArn"
+            },
+            "STORAGE_WARDROBEITEMS_NAME": {
+              "Ref": "storagewardrobeItemsName"
+            },
+            "STORAGE_WARDROBEITEMS_ARN": {
+              "Ref": "storagewardrobeItemsArn"
+            },
+            "STORAGE_WARDROBEITEMS_STREAMARN": {
+              "Ref": "storagewardrobeItemsStreamArn"
+            },
+            "STORAGE_OUTFITS_NAME": {
+              "Ref": "storageoutfitsName"
+            },
+            "STORAGE_OUTFITS_ARN": {
+              "Ref": "storageoutfitsArn"
+            },
+            "STORAGE_OUTFITS_STREAMARN": {
+              "Ref": "storageoutfitsStreamArn"
+            },
+            "STORAGE_SWIPEHISTORY_NAME": {
+              "Ref": "storageswipeHistoryName"
+            },
+            "STORAGE_SWIPEHISTORY_ARN": {
+              "Ref": "storageswipeHistoryArn"
+            },
+            "STORAGE_SWIPEHISTORY_STREAMARN": {
+              "Ref": "storageswipeHistoryStreamArn"
             }
           }
         },
@@ -160,6 +251,207 @@
                   }
                 ]
               }
+            }
+          ]
+        }
+      }
+    },
+    "AmplifyResourcesPolicy": {
+      "DependsOn": [
+        "LambdaExecutionRole"
+      ],
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "amplify-lambda-execution-policy",
+        "Roles": [
+          {
+            "Ref": "LambdaExecutionRole"
+          }
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": "s3:ListBucket",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "storagewardrobestorageBucketName"
+                      }
+                    ]
+                  ]
+                }
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "s3:PutObject",
+                "s3:GetObject",
+                "s3:DeleteObject"
+              ],
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "storagewardrobestorageBucketName"
+                      },
+                      "/*"
+                    ]
+                  ]
+                }
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "dynamodb:Put*",
+                "dynamodb:Create*",
+                "dynamodb:BatchWriteItem",
+                "dynamodb:PartiQLInsert",
+                "dynamodb:Get*",
+                "dynamodb:BatchGetItem",
+                "dynamodb:List*",
+                "dynamodb:Describe*",
+                "dynamodb:Scan",
+                "dynamodb:Query",
+                "dynamodb:PartiQLSelect"
+              ],
+              "Resource": [
+                {
+                  "Ref": "storageusersArn"
+                },
+                {
+                  "Fn::Join": [
+                    "/",
+                    [
+                      {
+                        "Ref": "storageusersArn"
+                      },
+                      "index/*"
+                    ]
+                  ]
+                }
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "dynamodb:Put*",
+                "dynamodb:Create*",
+                "dynamodb:BatchWriteItem",
+                "dynamodb:PartiQLInsert",
+                "dynamodb:Get*",
+                "dynamodb:BatchGetItem",
+                "dynamodb:List*",
+                "dynamodb:Describe*",
+                "dynamodb:Scan",
+                "dynamodb:Query",
+                "dynamodb:PartiQLSelect",
+                "dynamodb:Update*",
+                "dynamodb:RestoreTable*",
+                "dynamodb:PartiQLUpdate",
+                "dynamodb:Delete*",
+                "dynamodb:PartiQLDelete"
+              ],
+              "Resource": [
+                {
+                  "Ref": "storagewardrobeItemsArn"
+                },
+                {
+                  "Fn::Join": [
+                    "/",
+                    [
+                      {
+                        "Ref": "storagewardrobeItemsArn"
+                      },
+                      "index/*"
+                    ]
+                  ]
+                }
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "dynamodb:Put*",
+                "dynamodb:Create*",
+                "dynamodb:BatchWriteItem",
+                "dynamodb:PartiQLInsert",
+                "dynamodb:Get*",
+                "dynamodb:BatchGetItem",
+                "dynamodb:List*",
+                "dynamodb:Describe*",
+                "dynamodb:Scan",
+                "dynamodb:Query",
+                "dynamodb:PartiQLSelect",
+                "dynamodb:Update*",
+                "dynamodb:RestoreTable*",
+                "dynamodb:PartiQLUpdate",
+                "dynamodb:Delete*",
+                "dynamodb:PartiQLDelete"
+              ],
+              "Resource": [
+                {
+                  "Ref": "storageoutfitsArn"
+                },
+                {
+                  "Fn::Join": [
+                    "/",
+                    [
+                      {
+                        "Ref": "storageoutfitsArn"
+                      },
+                      "index/*"
+                    ]
+                  ]
+                }
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "dynamodb:Put*",
+                "dynamodb:Create*",
+                "dynamodb:BatchWriteItem",
+                "dynamodb:PartiQLInsert",
+                "dynamodb:Get*",
+                "dynamodb:BatchGetItem",
+                "dynamodb:List*",
+                "dynamodb:Describe*",
+                "dynamodb:Scan",
+                "dynamodb:Query",
+                "dynamodb:PartiQLSelect",
+                "dynamodb:Update*",
+                "dynamodb:RestoreTable*",
+                "dynamodb:PartiQLUpdate",
+                "dynamodb:Delete*",
+                "dynamodb:PartiQLDelete"
+              ],
+              "Resource": [
+                {
+                  "Ref": "storageswipeHistoryArn"
+                },
+                {
+                  "Fn::Join": [
+                    "/",
+                    [
+                      {
+                        "Ref": "storageswipeHistoryArn"
+                      },
+                      "index/*"
+                    ]
+                  ]
+                }
+              ]
             }
           ]
         }
