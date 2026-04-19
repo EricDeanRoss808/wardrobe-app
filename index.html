@@ -657,7 +657,7 @@
 
       // Poll every 5 seconds for results
       let attempts = 0;
-      const maxAttempts = 24;
+      const maxAttempts = 60; // 5 minutes max
 
       const poll = async () => {
         attempts++;
@@ -681,19 +681,19 @@
             }
           }
           if (attempts < maxAttempts) {
-            setTimeout(poll, 5000);
+            setTimeout(poll, 8000);
           } else {
             results.innerHTML = `<div style="padding:20px;color:#e55;">Generation timed out. Please try again.</div>`;
             btn.textContent = '✨ Generate My Outfits';
             btn.disabled = false;
           }
         } catch (err) {
-          if (attempts < maxAttempts) setTimeout(poll, 5000);
+          if (attempts < maxAttempts) setTimeout(poll, 8000);
         }
       };
 
       // Start polling after 15 seconds
-      setTimeout(poll, 15000);
+      setTimeout(poll, 30000);
 
     } catch (err) {
       console.error('Generation error:', err);
