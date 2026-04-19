@@ -66,24 +66,41 @@ exports.handler = async (event) => {
       return respond(200, { uploadUrl: url, key });
     }
 
-    // ─── POST /outfits ── save generated outfit ───
-    // Hours 17-22 team: add Gemini outfit generation here
-    if (path === '/outfits' && method === 'POST') {
-      const body = JSON.parse(event.body || '{}');
-      const outfit = {
-        userId,
-        outfitId: `outfit_${Date.now()}`,
-        items: body.items || [],
-        occasion: body.occasion || 'casual',
-        generatedAt: new Date().toISOString()
-      };
-      await dynamo.put({
-        TableName: TABLES.outfits,
-        Item: outfit
-      }).promise();
-      return respond(200, { message: 'Outfit saved', outfit });
-    }
 
+// ─── POST /outfits ── trigger outfit-generator then imageGen ───
+    if (path === '/outfits' && method === 'POST') {
+      const lambda = new AWS.Lambda();
+      const body = JSON.parse(event.body || '{}');
+      const targetUserId = body.userId || userId;
+
+      // Step 1: Generate outfits
+      const outfitResult = await lambda.invoke({
+        FunctionName: 'outfit-generator',
+        InvocationType: 'RequestResponse',
+        Payload: JSON.stringify({ userId: targetUserId })
+      }).promise();
+      const outfitResponse = JSON.parse(outfitResult.Payload);
+
+      if (outfitResponse.status !== 'success') {
+        return respond(500, outfitResponse);
+      }
+
+      // Step 2: Generate mockup images
+      const imageResult = await lambda.invoke({
+        FunctionName: 'imageGen',
+        InvocationType: 'RequestResponse',
+        Payload: JSON.stringify({
+          userId: targetUserId,
+          outfitSetId: outfitResponse.outfitSetId
+        })
+      }).promise();
+      const imageResponse = JSON.parse(imageResult.Payload);
+
+      return respond(200, {
+        outfits: outfitResponse,
+        mockups: imageResponse
+      });
+    }
     // ─── GET /outfits ── fetch user's saved outfits ───
     if (path === '/outfits' && method === 'GET') {
       const result = await dynamo.query({
